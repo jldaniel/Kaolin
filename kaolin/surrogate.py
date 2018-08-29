@@ -71,8 +71,8 @@ class Surrogate(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X, return_std=False):
-        return self.best_estimator_.predict(X, return_std=return_std)
+    def predict(self, X, return_std=False, return_cov=False):
+        return self.best_estimator_.predict(X, return_std=return_std, return_cov=return_cov)
 
     def save(self, location):
         pass
