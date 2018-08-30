@@ -1,14 +1,12 @@
 
 import numpy as np
 from kaolin import Surrogate
-from sklearn.utils.testing \
-    import (assert_true, assert_greater, assert_array_less,
-            assert_almost_equal, assert_equal, assert_raise_message,
-            assert_array_almost_equal)
+from sklearn.utils.testing import assert_almost_equal
 
 
 def f(x):
     return x * np.sin(x)
+
 
 X = np.atleast_2d([1., 3., 5., 6., 7., 8.]).T
 X2 = np.atleast_2d([2., 4., 5.5, 6.5, 7.5]).T
