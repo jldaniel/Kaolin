@@ -2,3 +2,4 @@ numpy
 scipy
 sklearn
 nose
+-e git+git://github.com/jldaniel/Touchstone.git#egg=touchstone
