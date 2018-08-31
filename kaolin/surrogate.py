@@ -125,14 +125,14 @@ class Surrogate(BaseEstimator, RegressorMixin):
         if n_points < 0:
             raise ValueError('The given number of adaption points ' + repr(n_points) + ' must be greater than 0')
 
-        designs = []
+        n_dim = bounds.shape[0]
+        designs = np.zeros((n_points, n_dim))
         if self.best_estimator_ is None:
             # No estimator has been trained yet, so generate an initial DOE
             designs = mixed_doe(n_points, bounds, seed=self.random_state)
             return designs
 
         model = copy.deepcopy(self.best_estimator_)
-        n_dim = bounds.shape[0]
 
         design = differential_evolution(func=Surrogate._model_error,
                                         bounds=bounds,
@@ -140,9 +140,9 @@ class Surrogate(BaseEstimator, RegressorMixin):
                                         init='random',
                                         maxiter=50,
                                         tol=1e-5,
-                                        args=model)
+                                        args=(model,))
 
-        designs.append(design.x)
+        designs[0] = design.x
 
         if n_points == 1:
             return designs
@@ -150,8 +150,8 @@ class Surrogate(BaseEstimator, RegressorMixin):
         # TODO Parallelize this process across n_proc processes
         for i in range(1, n_points):
             # Update the model assuming that the predicted point is true
-            X_train = np.concatenate((self.X_train_, designs[i-1]), axis=0)
-            y_train = np.concatenate((self.y_train_, model.predict(designs[i-1])))
+            X_train = np.concatenate((self.X_train_, designs[i-1].reshape(-1, n_dim)), axis=0)
+            y_train = np.concatenate((self.y_train_, model.predict(designs[i-1].reshape(-1, n_dim))))
 
             model.fit(X_train, y_train)
 
@@ -162,9 +162,9 @@ class Surrogate(BaseEstimator, RegressorMixin):
                                             init='random',
                                             maxiter=50,
                                             tol=1e-5,
-                                            args=model)
+                                            args=(model,))
 
-            designs.append(design.x)
+            designs[i] = design.x
 
         return designs
 
