@@ -15,6 +15,8 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import *
 from sklearn.model_selection import GridSearchCV
 from sklearn.utils import check_X_y
+from sklearn.model_selection import cross_validate
+import time
 
 from kaolin.utils import mixed_doe
 
@@ -46,8 +48,16 @@ class Surrogate(BaseEstimator, RegressorMixin):
         self.best_estimator_ = None
         self.cv_results_ = None
         self.n_proc = n_proc
+        self.cv_metrics = {"explained_variance": None,
+                           "mean_absolute_error": None,
+                           "mean_squared_error": None,
+                           "mean_squared_log_error": None,
+                           "median_absolute_error": None,
+                           "r2_score": None,
+                           "training_time": None}
 
     def fit(self, X, y=None):
+        start_train_time = time.time()
         # TODO Check for repeated values and remove them, raise a Warning
         X, y = check_X_y(X, y, multi_output=True, y_numeric=True)
 
@@ -74,6 +84,28 @@ class Surrogate(BaseEstimator, RegressorMixin):
 
         self.best_estimator_ = grid_search.best_estimator_
         self.cv_results_ = grid_search.cv_results_
+        stop_train_time = time.time()
+
+        # Calculate the cross validation metrics
+        scoring = ['explained_variance',
+                   'neg_mean_absolute_error',
+                   'neg_mean_squared_error',
+                   'neg_mean_squared_log_error',
+                   'neg_median_absolute_error',
+                   'r2']
+
+        scores = cross_validate(self.best_estimator_,
+                                self.X_train_,
+                                self.y_train_,
+                                scoring=scoring, cv=5)
+
+        self.cv_metrics['explained_variance'] = np.mean(scores['test_explained_variance'])
+        self.cv_metrics['mean_absolute_error'] = -np.mean(scores['test_neg_mean_absolute_error'])
+        self.cv_metrics['mean_squared_error'] = -np.mean(scores['test_neg_mean_squared_error'])
+        self.cv_metrics['mean_squared_log_error'] = -np.mean(scores['test_neg_mean_squared_log_error'])
+        self.cv_metrics['median_absolute_error'] = -np.mean(scores['test_neg_median_absolute_error'])
+        self.cv_metrics['r2_score'] = np.mean(scores['test_r2'])
+        self.cv_metrics['training_time'] = 1000*(stop_train_time - start_train_time)
 
         return self
 
@@ -157,6 +189,13 @@ class Surrogate(BaseEstimator, RegressorMixin):
             self.fit(X_train, y_train)
 
         return self
+
+    def info(self):
+        """
+        Display info about the surrogate model
+        :return: None
+        """
+        pass
 
     def save(self, location):
         pass

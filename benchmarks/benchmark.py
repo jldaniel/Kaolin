@@ -45,7 +45,10 @@ print('R^2 Score: ' + repr(r2_score(y_true, y_pred)))
 print('Training Time: ' + repr(1000*(toc - tic)) + "ms")
 
 
-n_train = 200
+print(repr(surrogate.cv_metrics))
+
+
+n_train = 100
 n_test = 100
 
 # Benchmark the Ackley model
@@ -73,3 +76,5 @@ print('Mean Squared Log Error: ' + repr(mean_squared_log_error(y_true, y_pred)))
 print('Medain Absolute Error: ' + repr(median_absolute_error(y_true, y_pred)))
 print('R^2 Score: ' + repr(r2_score(y_true, y_pred)))
 print('Training Time: ' + repr(1000*(toc - tic)) + "ms")
+
+print(repr(surrogate.cv_metrics))
