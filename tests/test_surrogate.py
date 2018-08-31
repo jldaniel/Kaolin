@@ -22,11 +22,7 @@ def test_interpolation():
 
 
 def test_multioutput():
-    # Test that GPR can deal with multi-dimensional target values
     y_2d = np.vstack((y, y * 2)).T
-
-    # Test for fixed kernel that first dimension of 2d GP equals the output
-    # of 1d GP and that second dimension is twice as large
 
     surrogate = Surrogate()
     surrogate.fit(X, y)
