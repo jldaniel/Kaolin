@@ -51,8 +51,6 @@ class Surrogate(BaseEstimator, RegressorMixin):
         self.cv_metrics = {"explained_variance": None,
                            "mean_absolute_error": None,
                            "mean_squared_error": None,
-                           "mean_squared_log_error": None,
-                           "median_absolute_error": None,
                            "r2_score": None,
                            "training_time": None}
 
@@ -90,8 +88,6 @@ class Surrogate(BaseEstimator, RegressorMixin):
         scoring = ['explained_variance',
                    'neg_mean_absolute_error',
                    'neg_mean_squared_error',
-                   'neg_mean_squared_log_error',
-                   'neg_median_absolute_error',
                    'r2']
 
         scores = cross_validate(self.best_estimator_,
@@ -102,8 +98,6 @@ class Surrogate(BaseEstimator, RegressorMixin):
         self.cv_metrics['explained_variance'] = np.mean(scores['test_explained_variance'])
         self.cv_metrics['mean_absolute_error'] = -np.mean(scores['test_neg_mean_absolute_error'])
         self.cv_metrics['mean_squared_error'] = -np.mean(scores['test_neg_mean_squared_error'])
-        self.cv_metrics['mean_squared_log_error'] = -np.mean(scores['test_neg_mean_squared_log_error'])
-        self.cv_metrics['median_absolute_error'] = -np.mean(scores['test_neg_median_absolute_error'])
         self.cv_metrics['r2_score'] = np.mean(scores['test_r2'])
         self.cv_metrics['training_time'] = 1000*(stop_train_time - start_train_time)
 
