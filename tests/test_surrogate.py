@@ -1,5 +1,7 @@
 
 import numpy as np
+import os
+
 from kaolin import Surrogate
 from sklearn.utils.testing import assert_almost_equal
 
@@ -41,3 +43,22 @@ def test_multioutput():
     # Standard deviation and covariance do not depend on output
     assert_almost_equal(y_std_1d, y_std_2d)
     assert_almost_equal(y_cov_1d, y_cov_2d)
+
+
+def test_save_load():
+    filename = 'tmp.kaolin'
+    surrogate = Surrogate().fit(X, y)
+    surrogate.save(filename)
+    surrogate = None
+
+    surrogate = Surrogate().load(filename)
+    y_pred, y_cov = surrogate.predict(X, return_cov=True)
+
+    assert_almost_equal(y_pred, y)
+    assert_almost_equal(np.diag(y_cov), 0.)
+
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+

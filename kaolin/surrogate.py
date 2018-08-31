@@ -8,7 +8,6 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
 import copy
-import numpy as np
 from scipy.optimize import differential_evolution
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -16,6 +15,7 @@ from sklearn.gaussian_process.kernels import *
 from sklearn.model_selection import GridSearchCV
 from sklearn.utils import check_X_y
 from sklearn.model_selection import cross_validate
+from sklearn.externals import joblib
 import time
 
 from kaolin.utils import mixed_doe
@@ -81,6 +81,7 @@ class Surrogate(BaseEstimator, RegressorMixin):
         grid_search.fit(X, y)
 
         self.best_estimator_ = grid_search.best_estimator_
+        self.kernel_ = self.best_estimator_.kernel_
         self.cv_results_ = grid_search.cv_results_
         stop_train_time = time.time()
 
@@ -192,10 +193,25 @@ class Surrogate(BaseEstimator, RegressorMixin):
         pass
 
     def save(self, location):
-        pass
+        joblib.dump(self.best_estimator_, location)
+
+    def load(self, location):
+        # TODO: Handle the cross validation metrics and kernel search results
+        estimator = joblib.load(location)
+        self.best_estimator_ = estimator
+        self.X_train_ = estimator.X_train_
+        self.y_train_ = estimator.y_train_
+        self.kernel_ = estimator.kernel_
+
+        return self
+
 
     @staticmethod
-    def _model_error(self, X, model):
+    def _model_error(X, model):
         n_dim = model.X_train_.shape[1]
         _, std_dev = model.predict(X.reshape(-1, n_dim), return_std=True)
         return std_dev
+
+    def _cv_metrics(self):
+        # TODO: Move cross validation metrics into it's own method
+        pass
