@@ -51,7 +51,7 @@ y_pred, std_dev = surrogate.predict(x_pred, return_std=True)
 n_improve = 10
 x_improve = surrogate.adapt(model.bounds, n_improve)
 y_improve = model(x_improve)
-surrogate.improve(x_improve, y_improve)
+surrogate.fit(x_improve, y_improve)
 
 # Save the model
 surrogate.save('rosenbrock.kaolin')

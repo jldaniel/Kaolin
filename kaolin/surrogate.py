@@ -59,8 +59,13 @@ class Surrogate(BaseEstimator, RegressorMixin):
         # TODO Check for repeated values and remove them, raise a Warning
         X, y = check_X_y(X, y, multi_output=True, y_numeric=True)
 
-        self.X_train_ = np.copy(X)
-        self.y_train_ = np.copy(y)
+        if self.best_estimator_ is not None:
+            # Surrogate Already trained
+            self.X_train_ = np.concatenate((self.X_train_, X), axis=0)
+            self.y_train_ = np.concatenate((self.y_train_, y))
+        else:
+            self.X_train_ = np.copy(X)
+            self.y_train_ = np.copy(y)
 
         gpr = GaussianProcessRegressor(
             optimizer="fmin_l_bfgs_b",
@@ -78,7 +83,7 @@ class Surrogate(BaseEstimator, RegressorMixin):
             n_jobs=self.n_proc
         )
 
-        grid_search.fit(X, y)
+        grid_search.fit(self.X_train_, self.y_train_)
 
         self.best_estimator_ = grid_search.best_estimator_
         self.kernel_ = self.best_estimator_.kernel_
@@ -167,23 +172,6 @@ class Surrogate(BaseEstimator, RegressorMixin):
             designs[i] = design.x
 
         return designs
-
-    def improve(self, X, y):
-        """
-        Improve the surrogate model with additional data
-        :param X: Input training data
-        :param y: Output training data
-        :return: self
-        """
-        if self.best_estimator_ is None:
-            self.fit(X, y)
-        else:
-            X_train = np.concatenate((self.X_train_, X), axis=0)
-            y_train = np.concatenate((self.y_train_, y))
-
-            self.fit(X_train, y_train)
-
-        return self
 
     def info(self):
         """
